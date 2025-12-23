@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.student.app.mapper.MajorMapper">
+    
+    <resultMap id="BaseResultMap" type="Major">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="department_id" property="departmentId"/>
+        <result column="duration" property="duration"/>
+        <result column="description" property="description"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="department_name" property="departmentName"/>
+    </resultMap>
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT m.*, d.name as department_name
+        FROM majors m
+        LEFT JOIN departments d ON m.department_id = d.id
+        ORDER BY m.id
+    </select>
+    
+    <select id="findByPage" resultMap="BaseResultMap">
+        SELECT m.*, d.name as department_name
+        FROM majors m
+        LEFT JOIN departments d ON m.department_id = d.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (m.name LIKE CONCAT('%', #{keyword}, '%') OR d.name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY m.id
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM majors m
+        LEFT JOIN departments d ON m.department_id = d.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (m.name LIKE CONCAT('%', #{keyword}, '%') OR d.name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT m.*, d.name as department_name
+        FROM majors m
+        LEFT JOIN departments d ON m.department_id = d.id
+        WHERE m.id = #{id}
+    </select>
+    
+    <select id="findByDepartmentId" resultMap="BaseResultMap">
+        SELECT * FROM majors WHERE department_id = #{departmentId} ORDER BY id
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO majors (name, department_id, duration, description)
+        VALUES (#{name}, #{departmentId}, #{duration}, #{description})
+    </insert>
+    
+    <update id="update">
+        UPDATE majors
+        SET name = #{name}, department_id = #{departmentId}, duration = #{duration}, description = #{description}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM majors WHERE id = #{id}
+    </delete>
+</mapper>

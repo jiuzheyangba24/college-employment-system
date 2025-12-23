@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生管理 - 高校就业信息管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-graduation-cap d-block mb-3" style="font-size: 40px; color: var(--primary-color);"></i>
+            <h4>就业信息管理</h4>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/"><i class="fas fa-tachometer-alt"></i>首页仪表盘</a></li>
+            <li><a href="/students" class="active"><i class="fas fa-users"></i>学生管理</a></li>
+            <li><a href="/employment"><i class="fas fa-briefcase"></i>就业信息</a></li>
+            <li><a href="/departments"><i class="fas fa-building"></i>院系管理</a></li>
+            <li><a href="/majors"><i class="fas fa-book"></i>专业管理</a></li>
+            <li><a href="/industries"><i class="fas fa-industry"></i>行业管理</a></li>
+            <li><a href="/ai/page"><i class="fas fa-robot"></i>AI就业助手</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <nav class="top-navbar glass-panel">
+            <div class="page-title"><i class="fas fa-users me-2 text-primary"></i>学生管理</div>
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    style="background: rgba(255,255,255,0.8); border:none;">
+                    <i class="fas fa-user-circle me-2 text-primary"></i>管理员
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg">
+                    <li><a class="dropdown-item" href="/logout"><i
+                                class="fas fa-sign-out-alt me-2 text-danger"></i>退出登录</a></li>
+                </ul>
+            </div>
+        </nav>
+        <div class="content-wrapper animate-fade-in">
+            <div class="card p-3">
+                <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0 text-primary fw-bold">学生列表</h5>
+                        <p class="text-muted small mb-0">管理所有学生信息</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-light me-2" style="background: #eef2ff; color: #4361ee;"
+                            onclick="$('#importFile').click()"><i class="fas fa-file-import me-1"></i>导入</button>
+                        <input type="file" id="importFile" style="display:none" onchange="importData(this)">
+                        <button class="btn btn-light me-2" style="background: #eef2ff; color: #4361ee;"
+                            onclick="exportData()"><i class="fas fa-file-export me-1"></i>导出</button>
+                        <button class="btn btn-primary" onclick="showAddModal()"><i
+                                class="fas fa-plus me-1"></i>添加学生</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i
+                                        class="fas fa-search text-muted"></i></span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="keyword"
+                                    placeholder="搜索学号或姓名..." style="border-left: none;">
+                                <button class="btn btn-primary px-4" onclick="loadData()">搜索</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>学号</th>
+                                    <th>姓名</th>
+                                    <th>性别</th>
+                                    <th>专业</th>
+                                    <th>班级</th>
+                                    <th>联系方式</th>
+                                    <th>就业状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataList"></tbody>
+                        </table>
+                    </div>
+                    <nav id="pagination" class="mt-4"></nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="modalTitle">添加学生</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="dataForm">
+                        <input type="hidden" id="id">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="snum" placeholder="学号" required>
+                            <label>学号 <span class="text-danger">*</span></label>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="name" placeholder="姓名" required>
+                            <label>姓名 <span class="text-danger">*</span></label>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="sex">
+                                        <option value="男">男</option>
+                                        <option value="女">女</option>
+                                    </select>
+                                    <label>性别</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select class="form-select" id="majorId" required></select>
+                                    <label>专业 <span class="text-danger">*</span></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="grade" placeholder="班级">
+                                    <label>班级</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text" class="form-control" id="tel" placeholder="联系方式">
+                                    <label>联系方式</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="status">
+                                <option value="未就业">未就业</option>
+                                <option value="已就业">已就业</option>
+                                <option value="实习中">实习中</option>
+                            </select>
+                            <label>就业状态</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0 pt-0 pe-4 pb-4">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal"
+                        style="border-radius: 10px;">取消</button>
+                    <button type="button" class="btn btn-primary px-4" onclick="saveData()"
+                        style="border-radius: 10px;">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        var currentPage = 1, modal = null;
+        $(function () { modal = new bootstrap.Modal(document.getElementById('formModal')); loadMajors(); loadData(); });
+        function loadMajors() { $.get('/majors/all', function (data) { var html = '<option value="">请选择专业</option>'; data.forEach(function (item) { html += '<option value="' + item.id + '">' + item.name + '</option>'; }); $('#majorId').html(html); }); }
+        function loadData() {
+            var keyword = $('#keyword').val(); $.get('/students/page', { page: currentPage, size: 10, keyword: keyword }, function (res) {
+                var html = ''; res.list.forEach(function (item) {
+                    var statusClass = item.status === '已就业' ? 'success' : (item.status === '实习中' ? 'warning' : 'secondary');
+                    var badgeStyle = "";
+                    if (item.status === '已就业') badgeStyle = "background-color: #d1fae5; color: #065f46;";
+                    else if (item.status === '实习中') badgeStyle = "background-color: #fef3c7; color: #92400e;";
+                    else badgeStyle = "background-color: #f3f4f6; color: #4b5563;";
+
+                    html += '<tr><td class="fw-bold text-primary">' + item.snum + '</td><td>' + item.name + '</td><td>' + item.sex + '</td><td>' + (item.majorName || '-') + '</td><td>' + (item.grade || '-') + '</td><td>' + (item.tel || '-') + '</td><td><span class="badge" style="' + badgeStyle + '">' + item.status + '</span></td><td><button class="btn btn-sm btn-light text-primary me-1" onclick="editData(' + item.id + ')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-light text-danger" onclick="deleteData(' + item.id + ')"><i class="fas fa-trash"></i></button></td></tr>';
+                }); $('#dataList').html(html || '<tr><td colspan="8" class="text-center text-muted py-5">暂无数据</td></tr>'); renderPagination(res.total, res.pages);
+            });
+        }
+        function renderPagination(total, pages) { if (pages <= 1) { $('#pagination').html(''); return; } var html = '<ul class="pagination pagination-sm justify-content-center">'; html += '<li class="page-item ' + (currentPage <= 1 ? 'disabled' : '') + '"><a class="page-link border-0 rounded-start-pill" href="javascript:goPage(' + (currentPage - 1) + ')"><i class="fas fa-chevron-left"></i></a></li>'; for (var i = 1; i <= pages; i++) { html += '<li class="page-item ' + (i === currentPage ? 'active' : '') + '"><a class="page-link border-0 mx-1 rounded-circle" href="javascript:goPage(' + i + ')">' + i + '</a></li>'; } html += '<li class="page-item ' + (currentPage >= pages ? 'disabled' : '') + '"><a class="page-link border-0 rounded-end-pill" href="javascript:goPage(' + (currentPage + 1) + ')"><i class="fas fa-chevron-right"></i></a></li></ul>'; $('#pagination').html(html); }
+        function goPage(page) { currentPage = page; loadData(); }
+        function showAddModal() { $('#modalTitle').text('添加学生'); $('#dataForm')[0].reset(); $('#id').val(''); modal.show(); }
+        function editData(id) { $.get('/students/' + id, function (data) { $('#modalTitle').text('编辑学生'); $('#id').val(data.id); $('#snum').val(data.snum); $('#name').val(data.name); $('#sex').val(data.sex); $('#majorId').val(data.majorId); $('#grade').val(data.grade); $('#tel').val(data.tel); $('#status').val(data.status); modal.show(); }); }
+        function saveData() { var id = $('#id').val(); var data = { snum: $('#snum').val(), name: $('#name').val(), sex: $('#sex').val(), majorId: $('#majorId').val(), grade: $('#grade').val(), tel: $('#tel').val(), status: $('#status').val() }; var url = id ? '/students/' + id : '/students'; var method = id ? 'PUT' : 'POST'; $.ajax({ url: url, type: method, contentType: 'application/json', data: JSON.stringify(data), success: function (res) { if (res.success) { modal.hide(); loadData(); alert(res.message); } else { alert(res.message); } } }); }
+        function deleteData(id) { if (!confirm('确定要删除吗？')) return; $.ajax({ url: '/students/' + id, type: 'DELETE', success: function (res) { if (res.success) loadData(); alert(res.message); } }); }
+
+        function exportData() { window.location.href = '/excel/students/export'; }
+
+        function importData(input) {
+            if (input.files && input.files[0]) {
+                var formData = new FormData();
+                formData.append('file', input.files[0]);
+                $.ajax({
+                    url: '/excel/students/import',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        if (res.success) {
+                            alert('导入成功');
+                            loadData();
+                        } else {
+                            alert(res.message);
+                        }
+                        $('#importFile').val('');
+                    },
+                    error: function () {
+                        alert('导入失败，请检查文件格式');
+                        $('#importFile').val('');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>

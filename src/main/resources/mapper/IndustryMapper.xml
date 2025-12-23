@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.student.app.mapper.IndustryMapper">
+    
+    <resultMap id="BaseResultMap" type="Industry">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM industries ORDER BY id
+    </select>
+    
+    <select id="findByPage" resultMap="BaseResultMap">
+        SELECT * FROM industries
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+        ORDER BY id
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM industries
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND name LIKE CONCAT('%', #{keyword}, '%')
+            </if>
+        </where>
+    </select>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM industries WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO industries (name, description)
+        VALUES (#{name}, #{description})
+    </insert>
+    
+    <update id="update">
+        UPDATE industries
+        SET name = #{name}, description = #{description}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM industries WHERE id = #{id}
+    </delete>
+</mapper>

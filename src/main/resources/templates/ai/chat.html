@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI就业助手 - 高校就业信息管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 220px);
+            display: flex;
+            flex-direction: column;
+            background: #fff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+            background: linear-gradient(180deg, #f8f9ff 0%, #fff 100%);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .message.ai .message-avatar {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: #fff;
+        }
+
+        .message.user .message-avatar {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+            color: #fff;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 15px 20px;
+            border-radius: 20px;
+            margin: 0 15px;
+            line-height: 1.6;
+        }
+
+        .message.ai .message-content {
+            background: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 20px 20px 20px 5px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: #fff;
+            border-radius: 20px 20px 5px 20px;
+        }
+
+        .chat-input-area {
+            padding: 20px 30px;
+            background: #fff;
+            border-top: 1px solid #eee;
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 2px solid #e8e8e8;
+            border-radius: 15px;
+            padding: 15px 20px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .chat-input:focus {
+            border-color: #4361ee;
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+        }
+
+        .send-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(67, 97, 238, 0.4);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 10px 0;
+        }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: #4361ee;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .welcome-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+
+        .welcome-message i {
+            font-size: 60px;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+        }
+
+        .quick-questions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .quick-question {
+            background: #f0f4ff;
+            color: #4361ee;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .quick-question:hover {
+            background: #4361ee;
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header"><i class="fas fa-graduation-cap d-block mb-3"
+                style="font-size: 40px; color: var(--primary-color);"></i>
+            <h4>就业信息管理</h4>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/"><i class="fas fa-tachometer-alt"></i>首页仪表盘</a></li>
+            <li><a href="/students"><i class="fas fa-users"></i>学生管理</a></li>
+            <li><a href="/employment"><i class="fas fa-briefcase"></i>就业信息</a></li>
+            <li><a href="/departments"><i class="fas fa-building"></i>院系管理</a></li>
+            <li><a href="/majors"><i class="fas fa-book"></i>专业管理</a></li>
+            <li><a href="/industries"><i class="fas fa-industry"></i>行业管理</a></li>
+            <li><a href="/ai/page" class="active"><i class="fas fa-robot"></i>AI就业助手</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <nav class="top-navbar glass-panel">
+            <div class="page-title"><i class="fas fa-robot me-2 text-primary"></i>AI就业助手</div>
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    style="background: rgba(255,255,255,0.8); border:none;"><i
+                        class="fas fa-user-circle me-2 text-primary"></i>管理员</button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg">
+                    <li><a class="dropdown-item" href="/logout"><i
+                                class="fas fa-sign-out-alt me-2 text-danger"></i>退出登录</a></li>
+                </ul>
+            </div>
+        </nav>
+        <div class="content-wrapper animate-fade-in">
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- 显示历史记录 -->
+                    <th:block th:if="${chatHistory != null and !chatHistory.isEmpty()}">
+                        <div th:each="msg : ${chatHistory}"
+                            th:class="${msg.role == 'user' ? 'message user' : 'message ai'}">
+                            <div class="message-avatar">
+                                <i th:class="${msg.role == 'user' ? 'fas fa-user' : 'fas fa-robot'}"></i>
+                            </div>
+                            <div class="message-content" th:utext="${msg.content}"></div>
+                        </div>
+                    </th:block>
+                    <!-- 欢迎消息（无历史时显示） -->
+                    <div class="welcome-message" th:if="${chatHistory == null or chatHistory.isEmpty()}">
+                        <i class="fas fa-robot d-block"></i>
+                        <h4>你好！我是AI就业助手</h4>
+                        <p>我可以帮助你解答就业相关问题，包括职业规划、简历撰写、面试技巧等</p>
+                        <div class="quick-questions">
+                            <button class="quick-question" onclick="askQuestion('如何撰写一份优秀的简历？')">📝 如何写简历</button>
+                            <button class="quick-question" onclick="askQuestion('应届毕业生如何做好职业规划？')">🎯 职业规划</button>
+                            <button class="quick-question" onclick="askQuestion('面试时有哪些注意事项？')">💼 面试技巧</button>
+                            <button class="quick-question" onclick="askQuestion('当前IT行业的就业前景如何？')">💻 行业分析</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <button class="btn btn-outline-danger me-2" onclick="clearHistory()" title="清除对话"><i
+                                class="fas fa-trash"></i></button>
+                        <input type="text" class="chat-input" id="userInput" placeholder="输入你的问题..."
+                            onkeypress="if(event.keyCode===13)sendMessage()">
+                        <button class="send-btn" id="sendBtn" onclick="sendMessage()"><i
+                                class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        var hasHistory = /*[[${chatHistory != null and !chatHistory.isEmpty()}]]*/ false;
+        var isFirstMessage = !hasHistory;
+
+        // 页面加载时滚动到底部
+        $(function () {
+            if (hasHistory) {
+                scrollToBottom();
+            }
+        });
+
+        function askQuestion(question) {
+            $('#userInput').val(question);
+            sendMessage();
+        }
+
+        function sendMessage() {
+            var message = $('#userInput').val().trim();
+            if (!message) return;
+
+            // 清除欢迎消息
+            if (isFirstMessage) {
+                $('.welcome-message').remove();
+                isFirstMessage = false;
+            }
+
+            // 添加用户消息
+            appendMessage('user', message);
+            $('#userInput').val('');
+            $('#sendBtn').prop('disabled', true);
+
+            // 添加AI思考中的消息
+            var aiMsgId = 'ai-' + Date.now();
+            appendMessage('ai', '<div class="typing-indicator"><span></span><span></span><span></span></div>', aiMsgId);
+
+            // 流式接收AI响应
+            var aiContent = '';
+            var eventSource = new EventSource('/ai/chat?message=' + encodeURIComponent(message));
+
+            eventSource.onmessage = function (event) {
+                aiContent += event.data;
+                $('#' + aiMsgId + ' .message-content').html(formatMessage(aiContent));
+                scrollToBottom();
+            };
+
+            eventSource.onerror = function (e) {
+                eventSource.close();
+                $('#sendBtn').prop('disabled', false);
+                if (!aiContent) {
+                    $('#' + aiMsgId + ' .message-content').html('抱歉，服务暂时不可用，请稍后再试。');
+                }
+            };
+        }
+
+        function appendMessage(type, content, id) {
+            var avatar = type === 'ai' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
+            var html = '<div class="message ' + type + '" ' + (id ? 'id="' + id + '"' : '') + '>' +
+                '<div class="message-avatar">' + avatar + '</div>' +
+                '<div class="message-content">' + content + '</div>' +
+                '</div>';
+            $('#chatMessages').append(html);
+            scrollToBottom();
+        }
+
+        function formatMessage(text) {
+            return text
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/^\d+\./gm, '<br>$&');
+        }
+
+        function scrollToBottom() {
+            var chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function clearHistory() {
+            if (!confirm('确定要清除所有对话记录吗？')) return;
+            $.post('/ai/clear', function (res) {
+                if (res.success) {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

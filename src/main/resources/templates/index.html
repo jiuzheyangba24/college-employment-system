@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页 - 高校就业信息管理系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-graduation-cap d-block mb-3" style="font-size: 40px; color: var(--primary-color);"></i>
+            <h4>就业信息管理</h4>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="/" class="active"><i class="fas fa-tachometer-alt"></i>首页仪表盘</a></li>
+            <li><a href="/students"><i class="fas fa-users"></i>学生管理</a></li>
+            <li><a href="/employment"><i class="fas fa-briefcase"></i>就业信息</a></li>
+            <li><a href="/departments"><i class="fas fa-building"></i>院系管理</a></li>
+            <li><a href="/majors"><i class="fas fa-book"></i>专业管理</a></li>
+            <li><a href="/industries"><i class="fas fa-industry"></i>行业管理</a></li>
+            <li><a href="/ai/page"><i class="fas fa-robot"></i>AI就业助手</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <nav class="top-navbar glass-panel">
+            <div class="page-title"><i class="fas fa-home me-2 text-primary"></i>首页仪表盘</div>
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                    style="background: rgba(255,255,255,0.8); border:none;">
+                    <i class="fas fa-user-circle me-2 text-primary"></i>管理员
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg">
+                    <li><a class="dropdown-item" href="/logout"><i
+                                class="fas fa-sign-out-alt me-2 text-danger"></i>退出登录</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <div class="content-wrapper animate-fade-in">
+            <!-- 统计卡片 -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card p-4" style="background: linear-gradient(135deg, #4361ee, #3f37c9); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 text-uppercase mb-2">学生总数</h6>
+                                <h2 class="mb-0 fw-bold" th:text="${totalStudents}">0</h2>
+                            </div>
+                            <div class="rounded-circle p-3" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-4" style="background: linear-gradient(135deg, #4cc9f0, #4895ef); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 text-uppercase mb-2">已就业人数</h6>
+                                <h2 class="mb-0 fw-bold" th:text="${employedCount}">0</h2>
+                            </div>
+                            <div class="rounded-circle p-3" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-briefcase fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-4" style="background: linear-gradient(135deg, #f72585, #b5179e); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 text-uppercase mb-2">就业率</h6>
+                                <h2 class="mb-0 fw-bold"><span th:text="${employmentRate}">0</span>%</h2>
+                            </div>
+                            <div class="rounded-circle p-3" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-chart-line fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card p-4" style="background: linear-gradient(135deg, #3a0ca3, #4361ee); color: white;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-white-50 text-uppercase mb-2">平均薪资</h6>
+                                <h2 class="mb-0 fw-bold">¥<span th:text="${avgSalary}">0</span></h2>
+                            </div>
+                            <div class="rounded-circle p-3" style="background: rgba(255,255,255,0.2);">
+                                <i class="fas fa-money-bill-wave fa-2x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图表区域 -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-0 pb-0">
+                            <h5 class="card-title mb-0"><i class="fas fa-chart-pie me-2 text-primary"></i>就业状态分布</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="statusChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-0 pb-0">
+                            <h5 class="card-title mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i>行业就业分布</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="industryChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-0 pb-0">
+                            <h5 class="card-title mb-0"><i class="fas fa-chart-area me-2 text-primary"></i>就业趋势</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="trendChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header border-0 pb-0">
+                            <h5 class="card-title mb-0"><i class="fas fa-map me-2 text-primary"></i>就业省份分布</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="provinceChart" style="height: 350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script>
+        $(function () {
+            // 通用图表配置
+            const commonGrid = { left: '3%', right: '4%', bottom: '3%', containLabel: true };
+            const glassTooltip = {
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                borderColor: '#e0e0e0',
+                textStyle: { color: '#2b2d42' },
+                padding: [10, 15],
+                extraCssText: 'box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); border-radius: 8px;'
+            };
+
+            // 就业状态饼图
+            var statusChart = echarts.init(document.getElementById('statusChart'));
+            $.get('/students/stats/status', function (data) {
+                statusChart.setOption({
+                    tooltip: { trigger: 'item', ...glassTooltip },
+                    legend: { bottom: 0, icon: 'circle' },
+                    color: ['#4361ee', '#4cc9f0', '#f72585', '#b5179e'],
+                    series: [{
+                        type: 'pie',
+                        radius: ['45%', '75%'],
+                        center: ['50%', '45%'],
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: { show: false },
+                        data: data
+                    }]
+                });
+            });
+
+            // 行业分布柱图
+            var industryChart = echarts.init(document.getElementById('industryChart'));
+            $.get('/employment/stats/industry', function (data) {
+                industryChart.setOption({
+                    tooltip: { trigger: 'axis', ...glassTooltip },
+                    grid: commonGrid,
+                    xAxis: {
+                        type: 'category',
+                        data: data.map(item => item.name),
+                        axisLabel: { rotate: 45, interval: 0, color: '#666' },
+                        axisLine: { lineStyle: { color: '#eee' } }
+                    },
+                    yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed' } } },
+                    series: [{
+                        type: 'bar',
+                        data: data.map(item => item.value),
+                        itemStyle: {
+                            borderRadius: [5, 5, 0, 0],
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#4361ee' },
+                                { offset: 1, color: '#3f37c9' }
+                            ])
+                        },
+                        barWidth: '40%'
+                    }]
+                });
+            });
+
+            // 就业趋势折线图
+            var trendChart = echarts.init(document.getElementById('trendChart'));
+            $.get('/employment/stats/month', function (data) {
+                trendChart.setOption({
+                    tooltip: { trigger: 'axis', ...glassTooltip },
+                    grid: commonGrid,
+                    xAxis: { type: 'category', data: data.map(item => item.name), axisLine: { lineStyle: { color: '#eee' } } },
+                    yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed' } } },
+                    series: [{
+                        type: 'line',
+                        data: data.map(item => item.value),
+                        smooth: true,
+                        showSymbol: false,
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(67, 97, 238, 0.4)' },
+                                { offset: 1, color: 'rgba(67, 97, 238, 0.05)' }
+                            ])
+                        },
+                        lineStyle: { color: '#4361ee', width: 4 },
+                        itemStyle: { color: '#4361ee' }
+                    }]
+                });
+            });
+
+            // 省份分布柱图
+            var provinceChart = echarts.init(document.getElementById('provinceChart'));
+            $.get('/employment/stats/province', function (data) {
+                provinceChart.setOption({
+                    tooltip: { trigger: 'axis', ...glassTooltip },
+                    grid: commonGrid,
+                    xAxis: {
+                        type: 'category',
+                        data: data.map(item => item.name),
+                        axisLabel: { rotate: 45, interval: 0, color: '#666' }
+                    },
+                    yAxis: { type: 'value', splitLine: { lineStyle: { type: 'dashed' } } },
+                    series: [{
+                        type: 'bar',
+                        data: data.map(item => item.value),
+                        itemStyle: {
+                            borderRadius: [5, 5, 0, 0],
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#4cc9f0' },
+                                { offset: 1, color: '#4361ee' }
+                            ])
+                        },
+                        barWidth: '40%'
+                    }]
+                });
+            });
+
+            // 响应式调整
+            window.addEventListener('resize', function () {
+                statusChart.resize();
+                industryChart.resize();
+                trendChart.resize();
+                provinceChart.resize();
+            });
+        });
+    </script>
+</body>
+
+</html>

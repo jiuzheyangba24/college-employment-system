@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.student.app.mapper.UserMapper">
+    
+    <resultMap id="BaseResultMap" type="User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="nickname" property="nickname"/>
+        <result column="tel" property="tel"/>
+        <result column="avatar" property="avatar"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="login_failed_count" property="loginFailedCount"/>
+        <result column="last_failed_login_time" property="lastFailedLoginTime"/>
+        <result column="account_locked" property="accountLocked"/>
+    </resultMap>
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT * FROM users ORDER BY id
+    </select>
+    
+    <select id="findByUsername" resultMap="BaseResultMap">
+        SELECT * FROM users WHERE username = #{username}
+    </select>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO users (username, password, nickname, tel, avatar, status)
+        VALUES (#{username}, #{password}, #{nickname}, #{tel}, #{avatar}, #{status})
+    </insert>
+    
+    <update id="update">
+        UPDATE users
+        SET nickname = #{nickname}, tel = #{tel}, avatar = #{avatar}, status = #{status}
+        WHERE id = #{id}
+    </update>
+    
+    <update id="updateLoginFailed">
+        UPDATE users
+        SET login_failed_count = #{count}, last_failed_login_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <update id="resetLoginFailed">
+        UPDATE users
+        SET login_failed_count = 0, last_failed_login_time = NULL
+        WHERE id = #{id}
+    </update>
+    
+    <update id="updatePassword">
+        UPDATE users
+        SET password = #{password}
+        WHERE id = #{id}
+    </update>
+</mapper>

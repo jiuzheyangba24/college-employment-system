@@ -1,0 +1,34 @@
+# Maven
+target/
+*.jar
+*.war
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.class
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Spring Boot
+application-local.yaml
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# ngrok
+ngrok.exe
+
+# SQL files with sensitive data
+import_class.sql
+fix_user.sql
+run.log

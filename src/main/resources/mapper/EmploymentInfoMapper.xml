@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.student.app.mapper.EmploymentInfoMapper">
+    
+    <resultMap id="BaseResultMap" type="EmploymentInfo">
+        <id column="id" property="id"/>
+        <result column="student_id" property="studentId"/>
+        <result column="company" property="company"/>
+        <result column="position" property="position"/>
+        <result column="salary" property="salary"/>
+        <result column="employment_date" property="employmentDate"/>
+        <result column="industry_id" property="industryId"/>
+        <result column="province" property="province"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <result column="student_name" property="studentName"/>
+        <result column="student_snum" property="studentSnum"/>
+        <result column="industry_name" property="industryName"/>
+    </resultMap>
+    
+    <select id="findAll" resultMap="BaseResultMap">
+        SELECT e.*, s.name as student_name, s.snum as student_snum, i.name as industry_name
+        FROM employment_info e
+        LEFT JOIN students s ON e.student_id = s.id
+        LEFT JOIN industries i ON e.industry_id = i.id
+        ORDER BY e.id
+    </select>
+    
+    <select id="findByPage" resultMap="BaseResultMap">
+        SELECT e.*, s.name as student_name, s.snum as student_snum, i.name as industry_name
+        FROM employment_info e
+        LEFT JOIN students s ON e.student_id = s.id
+        LEFT JOIN industries i ON e.industry_id = i.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.name LIKE CONCAT('%', #{keyword}, '%') OR e.company LIKE CONCAT('%', #{keyword}, '%') OR i.name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY e.id
+        LIMIT #{offset}, #{limit}
+    </select>
+    
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM employment_info e
+        LEFT JOIN students s ON e.student_id = s.id
+        LEFT JOIN industries i ON e.industry_id = i.id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (s.name LIKE CONCAT('%', #{keyword}, '%') OR e.company LIKE CONCAT('%', #{keyword}, '%') OR i.name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+    
+    <select id="findById" resultMap="BaseResultMap">
+        SELECT e.*, s.name as student_name, s.snum as student_snum, i.name as industry_name
+        FROM employment_info e
+        LEFT JOIN students s ON e.student_id = s.id
+        LEFT JOIN industries i ON e.industry_id = i.id
+        WHERE e.id = #{id}
+    </select>
+    
+    <select id="findByStudentId" resultMap="BaseResultMap">
+        SELECT e.*, s.name as student_name, s.snum as student_snum, i.name as industry_name
+        FROM employment_info e
+        LEFT JOIN students s ON e.student_id = s.id
+        LEFT JOIN industries i ON e.industry_id = i.id
+        WHERE e.student_id = #{studentId}
+    </select>
+    
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO employment_info (student_id, company, position, salary, employment_date, industry_id, province)
+        VALUES (#{studentId}, #{company}, #{position}, #{salary}, #{employmentDate}, #{industryId}, #{province})
+    </insert>
+    
+    <update id="update">
+        UPDATE employment_info
+        SET student_id = #{studentId}, company = #{company}, position = #{position}, 
+            salary = #{salary}, employment_date = #{employmentDate}, industry_id = #{industryId}, province = #{province}
+        WHERE id = #{id}
+    </update>
+    
+    <delete id="deleteById">
+        DELETE FROM employment_info WHERE id = #{id}
+    </delete>
+    
+    <insert id="batchInsert">
+        INSERT INTO employment_info (student_id, company, position, salary, employment_date, industry_id, province)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.studentId}, #{item.company}, #{item.position}, #{item.salary}, #{item.employmentDate}, #{item.industryId}, #{item.province})
+        </foreach>
+    </insert>
+    
+    <select id="countByProvince" resultType="java.util.Map">
+        SELECT province as name, COUNT(*) as value FROM employment_info WHERE province IS NOT NULL GROUP BY province
+    </select>
+    
+    <select id="countByIndustry" resultType="java.util.Map">
+        SELECT i.name as name, COUNT(e.id) as value
+        FROM employment_info e
+        LEFT JOIN industries i ON e.industry_id = i.id
+        GROUP BY i.name
+    </select>
+    
+    <select id="countByMonth" resultType="java.util.Map">
+        SELECT DATE_FORMAT(employment_date, '%Y-%m') as name, COUNT(*) as value
+        FROM employment_info
+        WHERE employment_date IS NOT NULL
+        GROUP BY DATE_FORMAT(employment_date, '%Y-%m')
+        ORDER BY name
+    </select>
+    
+    <select id="avgSalary" resultType="java.lang.Double">
+        SELECT AVG(salary) FROM employment_info WHERE salary IS NOT NULL
+    </select>
+</mapper>
